@@ -21,8 +21,12 @@ class TreeNN():
     # a stack for keeping track of computed nodes
     states = []
 
-    lens = [len(ops) for ops, _ in trees]
+    # TODO could be smarter here. bundle across levels of the tree,
+    # rather than a traversal. this would allow larger bundles.
+    # would end up being a trade off for batch size?
+
     # depth first traversal across all the trees in the batch
+    lens = [len(ops) for ops, _ in trees]
     for i in range(max(lens)):
         locs_n_ops_n_args = []
         for j, opsnargs in enumerate(trees):  # each element of our batch
