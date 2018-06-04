@@ -14,12 +14,16 @@ class PossibleWorlds():
             self.worlds = tf.get_variable(shape=(n_worlds, d_world),
                                           dtype=tf.float32,
                                           name='worlds')
-            self.W = tf.get_variable(shape=[encoder.cell.num_units*2, 1],
-                                              dtype=tf.float32,
-                                              name='W')
-            self.b = tf.get_variable(shape=[1, 1],
-                                              dtype=tf.float32,
-                                              name='b')
+            self.W = tf.get_variable(
+                shape=[encoder.cell.num_units*2, 1],
+                dtype=tf.float32,
+                name='W',
+                initializer=tf.random_normal_initializer(mean=1.0, stddev=0.1))
+            self.b = tf.get_variable(
+                shape=[1, 1],
+                dtype=tf.float32,
+                name='b',
+                initializer=tf.constant_initializer(1))
 
         self.variables = [self.W, self.b, self.worlds] +  self.encoder.variables
 

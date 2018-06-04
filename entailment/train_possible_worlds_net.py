@@ -9,7 +9,7 @@ import cts_satisfiability as csat
 import treenn
 
 def cross_entropy(p, t):
-    t = tf.constant(t, dtype=tf.float32, shape=(batch_size, 1))
+    t = tf.constant(t, dtype=tf.float32, shape=(p.shape[0], 1))
     with tf.name_scope('cross_entropy'):
         return tf.reduce_mean(-t*tf.log(p) - (1-t)*tf.log(1-p))
 
