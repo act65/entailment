@@ -10,8 +10,16 @@ def compute_gradients(model, x, t):
   return tape.gradient(loss, variables)
 
 def main():
+    d_world = 10
+    n_ops = 32
+    d_embed = 64
+    batch_size = 50
+
+    parser = data.Parser(led_parser.propositional_language())
+    sat3 = csat.Sat3Cell(d_world, n_ops)
+    nn = treenn.TreeNN(sat3, parser)
     possibleworldsnet = PossibleWorlds(
-        encoder=TreeNN(Sat3Cell(d_world, n_ops, d_embed), prop_parser),
+        encoder=nn,
         num_units=1,
         n_worlds=n_worlds,
         d_world=d_world

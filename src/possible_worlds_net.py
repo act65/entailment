@@ -4,12 +4,12 @@ class PossibleWorlds():
   """
   A NN designed specifically for predicting entailment.
   """
-  def __init__(self, encoder, num_units, n_worlds, d_world):
+  def __init__(self, encoder, n_worlds, d_world):
     self.encoder = encoder
     self.n_worlds = n_worlds
     self.worlds = tf.get_variable(shape=(n_worlds, d_world), dtype=tf.float32, name='worlds')
 
-    self.dense = tf.keras.layers.Dense(num_units)
+    self.dense = tf.keras.layers.Dense(1)
 
     self.variables = (self.dense.variables +
                      [self.encoder.cell.b4,
