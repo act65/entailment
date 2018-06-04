@@ -2,35 +2,36 @@ import tensorflow as tf
 import nary_fns
 
 class Sat3Cell():
-    def __init__(self, n_ops, num_units):
+    def __init__(self, n_ops, num_units, batch_size):
         self.num_units = num_units
-        self.batch_size = 50
+        self.batch_size = batch_size
 
-        self.nullary = nary_fns.Nullary(n_ops, num_units)
-        self.unary = nary_fns.Unary(n_ops, num_units)
-        self.binary = nary_fns.Binary(n_ops, num_units)
+        self.nullary = nary_fns.Nullary(n_ops, num_units, batch_size)
+        self.unary = nary_fns.Unary(n_ops, num_units, batch_size)
+        self.binary = nary_fns.Binary(n_ops, num_units, batch_size)
 
-    def __call__(self, states, opsnargs):
+    def __call__(self, states, locs_n_ops_n_args):
         """
         Args:
             states (list): a list of tf.tensors of shape [?, ?]
             opsnargs (list):
         """
-        ops, args = list(zip(*opsnargs))
+        locs, ops, args = list(zip(*locs_n_ops_n_args))
+        n = len(locs)
 
         # bundle into nullary, unary and binary ops
         # so we can batch them together
         nullary_ops = []
         unary_ops = []
         binary_ops = []
-        for j in range(len(opsnargs)):
-            op, arg = opsnargs[j]
+        for j in range(n):
+            loc, op, arg = locs_n_ops_n_args[j]
             if len(arg) == 0:
-                nullary_ops.append((j, op))
+                nullary_ops.append((loc, op))
             elif len(arg) == 1:
-                unary_ops.append((j, op, arg))
+                unary_ops.append((loc, op, arg))
             elif len(arg) == 2:
-                binary_ops.append((j, op, arg))
+                binary_ops.append((loc, op, arg))
             else:
                 raise ValueError('Too many args. Got {}, but should '
                                  'be in [0,1,2]'.format(len(arg)) )

@@ -1,5 +1,12 @@
 import tensorflow as tf
 
+import led_parser
+
+import possible_worlds_net as pwn
+import data
+import cts_satisfiability as csat
+import treenn
+
 def compute_gradients(model, x, t):
     with tf.GradientTape() as tape:
         y = model(x)
@@ -11,19 +18,15 @@ def compute_gradients(model, x, t):
 
 def main():
     d_world = 10
+    n_worlds = 8
     n_ops = 32
-    d_embed = 64
-    batch_size = 50
+    d_embed = 8
+    batch_size = 100
 
     parser = data.Parser(led_parser.propositional_language())
-    sat3 = csat.Sat3Cell(d_world, n_ops)
-    nn = treenn.TreeNN(sat3, parser)
-    possibleworldsnet = PossibleWorlds(
-        encoder=nn,
-        num_units=1,
-        n_worlds=n_worlds,
-        d_world=d_world
-    )
+    sat3 = csat.Sat3Cell(d_world, n_ops, batch_size)
+    nn = treenn.TreeNN(sat3, parser, batch_size)
+    possibleworldsnet = pwn.PossibleWorlds(nn, n_worlds, d_world)
 
     opt = tf.train.AdamOptimizer()
 

@@ -9,11 +9,12 @@ def scatter_add(ref, idx, x):
     return tf.scatter_add(ref, idx, x)
 
 class Nullary():
-    def __init__(self, n_ops, num_units, batch_size=50):
+    def __init__(self, n_ops, num_units, batch_size):
         self.n_ops = n_ops
         self.num_units = num_units
         self.batch_size = batch_size
-        self.embed = tf.keras.layers.Embedding(n_ops, num_units)
+        # self.embed = tf.keras.layers.Embedding(n_ops, num_units)
+        self.embeddings = tf.get_variable(shape=[n_ops, num_units], dtype=tf.float32, name='embeddings')
 
     def __call__(self, x):
         """
@@ -26,12 +27,13 @@ class Nullary():
         """
         y = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
         x = tf.constant(x, dtype=tf.int32)
-        e = self.embed(x[:, 1])  # fetch embeddings
+        # e = self.embed(x[:, 1])  # fetch embeddings
+        e = tf.gather(self.embeddings, x[:, 1])
 
         return scatter_add(y, x[:,0], e)
 
 class Unary():
-    def __init__(self, n_ops, num_units, batch_size=50):
+    def __init__(self, n_ops, num_units, batch_size):
         self.num_units = num_units
         self.batch_size = batch_size
         with tf.variable_scope('unary'):
@@ -73,6 +75,7 @@ class Unary():
         h = [] # tf.zeros(shape=[n_bundle, self.num_units], dtype=tf.float32)
         W = tf.gather(self.W4, ops)  # shape [n_bundle x num_units x num_units]
 
+        # TODO. think about this more. seems expensie?
         # can decompose matmul as a sum of products
         for i in range(self.num_units):
             # (batch_size x num_units) . (num_units x num_units)
@@ -86,7 +89,7 @@ class Unary():
         return scatter_add(y, locs, h)
 
 class Binary():
-    def __init__(self, n_ops, num_units, batch_size=50):
+    def __init__(self, n_ops, num_units, batch_size):
         self.num_units = num_units
         self.batch_size = batch_size
 

@@ -34,3 +34,8 @@ class Parser():
     parse_result = self.parser.parse(s)
     ops = [self.vocabulary[op.decode("utf-8")] for op in parse_result.ops]
     return ops, parse_result.inputs
+
+def fetch_data(batch_size):
+    # fetch a single batch
+    fname = '../logical_entailment_dataset/data/train.txt'
+    return next(batch_data(read_data(fname), batch_size))

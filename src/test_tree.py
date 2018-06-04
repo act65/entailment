@@ -8,11 +8,6 @@ import cts_satisfiability as csat
 
 import led_parser
 
-def fetch_data(batch_size):
-    # fetch a single batch
-    fname = '../logical_entailment_dataset/data/train.txt'
-    return next(data.batch_data(data.read_data(fname), batch_size))
-
 class Test(unittest.TestCase):
     def setUp(self):
         self.d_world = 10
@@ -24,10 +19,10 @@ class Test(unittest.TestCase):
         self.parser = data.Parser(led_parser.propositional_language())
 
     def test_sat3cell_tree(self):
-        sat3 = csat.Sat3Cell(self.d_world, self.n_ops)
-        nn = treenn.TreeNN(sat3, self.parser)
+        sat3 = csat.Sat3Cell(self.d_world, self.n_ops, self.batch_size)
+        nn = treenn.TreeNN(sat3, self.parser, self.batch_size)
 
-        A, B, E = fetch_data(self.batch_size)
+        A, B, E = data.fetch_data(self.batch_size)
 
         y = nn(self.w, A)
         self.assertEqual(y.shape, [self.batch_size, self.n_ops])
