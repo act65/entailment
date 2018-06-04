@@ -1,0 +1,3 @@
+[submodule "logical_entailment_dataset"]
+	path = logical_entailment_dataset
+	url = /home/act65/repos/entailment/logical_entailment_dataset/
