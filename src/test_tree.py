@@ -22,7 +22,7 @@ class Test(unittest.TestCase):
         sat3 = csat.Sat3Cell(self.d_world, self.n_ops, self.batch_size)
         nn = treenn.TreeNN(sat3, self.parser, self.batch_size)
 
-        A, B, E = data.fetch_data(self.batch_size)
+        A, B, E = next(data.fetch_data(self.batch_size))
 
         y = nn(self.w, A)
         self.assertEqual(y.shape, [self.batch_size, self.n_ops])

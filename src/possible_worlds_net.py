@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+import copy
+
 class PossibleWorlds():
     """
     A NN designed specifically for predicting entailment.
@@ -9,17 +11,24 @@ class PossibleWorlds():
         self.n_worlds = n_worlds
         self.worlds = tf.get_variable(shape=(n_worlds, d_world), dtype=tf.float32, name='worlds')
 
-        self.dense = tf.keras.layers.Dense(1)
+        with tf.variable_scope('pwn', reuse=tf.AUTO_REUSE):
+            self.W = tf.get_variable(shape=[encoder.cell.num_units*2, 1],
+                                              dtype=tf.float32,
+                                              name='W')
+            self.b = tf.get_variable(shape=[1, 1],
+                                              dtype=tf.float32,
+                                              name='b')
 
-        # self.variables = (self.dense.variables +
-        #                  [self.encoder.cell.b4,
-        #                  self.encoder.cell.op_embeddings,
-        #                  self.encoder.cell.W4])
+        self.variables = ([self.W, self.b] +
+                         [self.worlds] +
+                         self.encoder.variables)
 
     def eval_world(self, w):
-        x = tf.concat([self.encoder(w, self.a_trees),
-                     self.encoder(w, self.b_trees)], axis=1)
-        return self.dense(x) # NOTE in the paper this isnt actually a dense layer....
+        # NOTE this was a hard bug to catch. for some reason the trees are being
+        # mutated. not sure what is doing this.
+        x = tf.concat([self.encoder(w, copy.deepcopy(self.a_trees)),
+                     self.encoder(w, copy.deepcopy(self.b_trees))], axis=1)
+        return tf.matmul(x, self.W) + self.b # NOTE in the paper this isnt actually a dense layer....
 
     def __call__(self, A, B):
         """

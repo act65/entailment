@@ -10,6 +10,10 @@ class Sat3Cell():
         self.unary = nary_fns.Unary(n_ops, num_units, batch_size)
         self.binary = nary_fns.Binary(n_ops, num_units, batch_size)
 
+        self.variables = (self.nullary.variables +
+                          self.unary.variables +
+                          self.binary.variables)
+
     def __call__(self, states, locs_n_ops_n_args):
         """
         Args:
@@ -26,6 +30,7 @@ class Sat3Cell():
         binary_ops = []
         for j in range(n):
             loc, op, arg = locs_n_ops_n_args[j]
+
             if len(arg) == 0:
                 nullary_ops.append((loc, op))
             elif len(arg) == 1:

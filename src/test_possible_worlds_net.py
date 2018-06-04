@@ -23,21 +23,23 @@ class TestStringMethods(unittest.TestCase):
 
 class TestIntegration(unittest.TestCase):
     def test_sat3_output_shape(self):
-        """integration test with sat3"""
+        """integration test with sat3 and treenn"""
         d_world = 10
-        n_worlds = 2
+        n_worlds = 64
         n_ops = 32
         d_embed = 8
-        batch_size = 100
+        batch_size = 50
+
+        tf.enable_eager_execution()
 
         parser = data.Parser(led_parser.propositional_language())
-        sat3 = csat.Sat3Cell(d_world, n_ops, batch_size)
+        sat3 = csat.Sat3Cell(n_ops, d_world, batch_size)
         nn = treenn.TreeNN(sat3, parser, batch_size)
         possibleworldsnet = pwn.PossibleWorlds(nn, n_worlds, d_world)
 
-        A, B, E = data.fetch_data(batch_size)
+        A, B, E = next(data.fetch_data(batch_size))
         y = possibleworldsnet(A, B)
-        print(y)
+        self.assertEqual(y.shape, [batch_size, 1])
 
 
 if __name__ == '__main__':

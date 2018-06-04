@@ -14,7 +14,12 @@ class Nullary():
         self.num_units = num_units
         self.batch_size = batch_size
         # self.embed = tf.keras.layers.Embedding(n_ops, num_units)
-        self.embeddings = tf.get_variable(shape=[n_ops, num_units], dtype=tf.float32, name='embeddings')
+        with tf.variable_scope('nullary', reuse=tf.AUTO_REUSE):
+            self.embeddings = tf.get_variable(shape=[n_ops, num_units],
+                                              dtype=tf.float32,
+                                              name='embeddings')
+
+        self.variables = [self.embeddings]
 
     def __call__(self, x):
         """
@@ -36,9 +41,11 @@ class Unary():
     def __init__(self, n_ops, num_units, batch_size):
         self.num_units = num_units
         self.batch_size = batch_size
-        with tf.variable_scope('unary'):
+        with tf.variable_scope('unary', reuse=tf.AUTO_REUSE):
             self.W4 = tf.get_variable(shape=(n_ops, num_units, num_units), dtype=tf.float32, name='W4')
             self.b4 = tf.get_variable(shape=(n_ops, num_units), dtype=tf.float32, name='b4')
+
+        self.variables = [self.W4, self.b4]
 
     def __call__(self, states, opsnargs):
         """
@@ -65,14 +72,11 @@ class Unary():
 
         # since we have stacked the batches and past states
         # we need to index like so
-        l_idx = args[:, 0]*self.batch_size + locs
+        idx = args[:, 0]*self.batch_size + locs
 
-        l = tf.gather(stack, l_idx)
+        x = tf.gather(stack, idx)
 
-        # the actual cell ...
-        x = l  # shape [n_bundle x num_units]
-
-        h = [] # tf.zeros(shape=[n_bundle, self.num_units], dtype=tf.float32)
+        h = []
         W = tf.gather(self.W4, ops)  # shape [n_bundle x num_units x num_units]
 
         # TODO. think about this more. seems expensie?
@@ -93,9 +97,12 @@ class Binary():
         self.num_units = num_units
         self.batch_size = batch_size
 
-        with tf.variable_scope('binary'):
+        with tf.variable_scope('binary', reuse=tf.AUTO_REUSE):
             self.W4 = tf.get_variable(shape=(n_ops, 2*num_units, num_units), dtype=tf.float32, name='W4')
             self.b4 = tf.get_variable(shape=(n_ops, num_units), dtype=tf.float32, name='b4')
+
+        self.variables = [self.W4, self.b4]
+
 
     def __call__(self, states, opsnargs):
         """

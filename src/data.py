@@ -38,4 +38,4 @@ class Parser():
 def fetch_data(batch_size):
     # fetch a single batch
     fname = '../logical_entailment_dataset/data/train.txt'
-    return next(batch_data(read_data(fname), batch_size))
+    return batch_data(read_data(fname), batch_size)
