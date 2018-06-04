@@ -30,7 +30,7 @@ class PossibleWorlds():
         x = tf.concat([self.encoder(w, copy.deepcopy(self.a_trees)),
                      self.encoder(w, copy.deepcopy(self.b_trees))], axis=1)
         # NOTE in the paper this isnt actually a dense layer...
-        return tf.matmul(x, self.W) + self.b
+        return tf.nn.sigmoid(tf.matmul(x, self.W) + self.b)
 
     def __call__(self, A, B):
         """

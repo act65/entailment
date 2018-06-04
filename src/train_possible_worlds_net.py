@@ -8,10 +8,15 @@ import data
 import cts_satisfiability as csat
 import treenn
 
+def cross_entropy(p, t):
+    t = tf.constant(t, dtype=tf.float32, shape=(batch_size, 1))
+    with tf.name_scope('cross_entropy'):
+        return tf.reduce_mean(-t*tf.log(p) - (1-t)*tf.log(1-p))
+
 def compute_gradients(model, A, B, t):
     with tf.GradientTape() as tape:
         y = model(A, B)
-        loss = tf.losses.sigmoid_cross_entropy(multi_class_labels=t,logits=y)
+        loss = cross_entropy(y, t)
         step = tf.train.get_or_create_global_step().numpy()
         print('\rstep: {} loss {}'.format(step, tf.reduce_mean(loss)), end='', flush=True)
     return tape.gradient(loss, model.variables)
@@ -20,6 +25,7 @@ def main():
     language = led_parser.propositional_language()
     parser = data.Parser(language)
 
+    # TODO explore how the speed scales with these parameters
     d_world = 10
     n_worlds = 16
     n_ops = len(language.symbols)
@@ -33,8 +39,7 @@ def main():
     opt = tf.train.AdamOptimizer()
 
     for A, B, E in data.fetch_data(batch_size):
-        E = tf.constant(E, dtype=tf.float32, shape=(batch_size, 1))
-        grads = compute_gradients(possibleworldsnet, A, B, t=E)
+        grads = compute_gradients(possibleworldsnet, A, B, E)
         gnvs = zip(grads, possibleworldsnet.variables)
         opt.apply_gradients(gnvs, global_step=tf.train.get_or_create_global_step())
 
