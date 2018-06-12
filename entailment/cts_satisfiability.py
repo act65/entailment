@@ -2,9 +2,11 @@ import tensorflow as tf
 import nary_fns
 
 class Sat3Cell():
-    def __init__(self, n_ops, num_units, batch_size):
+    def __init__(self, n_ops, num_units, batch_size, n_worlds):
         self.num_units = num_units
         self.batch_size = batch_size
+        self.n_ops = n_ops
+        self.n_worlds = n_worlds
 
         self.nullary = nary_fns.Nullary(n_ops, num_units, batch_size)
         self.unary = nary_fns.Unary(n_ops, num_units, batch_size)
@@ -41,7 +43,7 @@ class Sat3Cell():
                 raise ValueError('Too many args. Got {}, but should '
                                  'be in [0,1,2]'.format(len(arg)) )
 
-        state = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
+        state = tf.zeros([self.batch_size, self.num_units, self.n_worlds], dtype=tf.float32)
         # apply nullary ops as a batch
         if len(nullary_ops) > 0:
             state += self.nullary(nullary_ops, w)

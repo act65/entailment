@@ -39,14 +39,10 @@ def compute_step(model, A, B, t):
         loss = cross_entropy(y, t)
     grads = tape.gradient(loss, model.variables)
 
-    # TODO found the bug. model.variables are given None gradients...
-    # only W, b are getting gradients. why can we not bprop into the encoder?
-
     for g, v in zip(grads, model.variables):
-        # if g is None:
-        print(v.name, 'None' if g is None else 'g')
+        if g is None:
+            raise ValueError('No gradient for {}'.format(v.name))
 
-    raise SystemExit
     return loss, grads, y
 
 def main(args):
@@ -56,7 +52,7 @@ def main(args):
 
     # TODO explore how the speed scales with hparams
 
-    sat3 = csat.Sat3Cell(n_ops, args.d_world, args.batch_size)
+    sat3 = csat.Sat3Cell(n_ops, args.d_world, args.batch_size, args.n_worlds)
     nn = treenn.TreeNN(sat3, parser, args.batch_size)
     possibleworldsnet = pwn.PossibleWorlds(nn, args.n_worlds, args.d_world)
 
@@ -73,19 +69,19 @@ def main(args):
             opt.apply_gradients(gnvs, global_step=step)
 
             acc =  np.mean(np.equal(np.round(p), np.array(E)))
-            print('\rstep: {} loss {} acc {}'.format(step.numpy(),
+            print('\rstep: {} loss {:.4f} acc {:.4f}'.format(step.numpy(),
                                 tf.reduce_mean(loss), acc), end='', flush=True)
             losses.append(loss)
             accuracys.append(acc)
-            grad_norms.append(np.sum([np.linalg.norm(g) for g in grads]))
+            # grad_norms.append(np.sum([np.linalg.norm(g) for g in grads]))
 
             if step.numpy() % 10 == 0:
                 fig = plt.figure()
                 plt.plot(losses, label='train loss')
                 plt.plot(accuracys, label='train accuracy')
-                plt.plot(grad_norms, label='train grad norms')
+                # plt.plot(grad_norms, label='train grad norms')
                 plt.title('PWN at step {}'.format(str(step.numpy())))
-                plt.legen()
+                plt.legend()
                 plt.savefig('/tmp/train_pwn.png')
                 plt.close()
 
