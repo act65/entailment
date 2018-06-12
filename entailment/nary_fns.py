@@ -1,19 +1,25 @@
 import tensorflow as tf
 import numpy as np
 
-def scatter_add(ref, idx, x):
-    if tf.executing_eagerly():
-        ref = tf.contrib.eager.Variable(ref)
-    else:
-        ref = tf.Variable(ref)
-    return tf.scatter_add(ref, idx, x)
+def scatter_add(ref, idx, x, batch_size):
+    indexes = [True if i in idx else False
+               for i in range(batch_size)]
+    vals = []
+    counter = 0
+    for i in range(batch_size):
+        if indexes[i]:  # if we are scattering into this idx
+            vals.append(x[counter, :])
+            counter += 1
+        else: # else just pad with zeros
+            vals.append(tf.zeros(x.shape[-1]))
+
+    return tf.stack(vals)
 
 class Nullary():
     def __init__(self, n_ops, num_units, batch_size):
         self.n_ops = n_ops
         self.num_units = num_units
         self.batch_size = batch_size
-        # self.embed = tf.keras.layers.Embedding(n_ops, num_units)
         with tf.variable_scope('nullary', reuse=tf.AUTO_REUSE):
             self.embeddings = tf.get_variable(shape=[n_ops, num_units, num_units],
                                               dtype=tf.float32,
@@ -33,11 +39,17 @@ class Nullary():
         y = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
         x = tf.constant(x, dtype=tf.int32)
 
-        # fetch op embeddings [num_units x num_units]
+        # fetch op embeddings [n_bundle x num_units x num_units]
         e = tf.gather(self.embeddings, x[:, 1])
+        # TODO could batch worlds up here!? W = [n_worlds, num_units]
+        # just need to make sure the other layers can handle the extra dims
         h = tf.matmul(tf.reshape(e, [-1, self.num_units]), w, transpose_b=True)
+
         h = tf.reshape(h, [-1, self.num_units])
-        return scatter_add(y, x[:,0], h)
+        h = tf.nn.l2_normalize(h, axis=1)
+
+        return scatter_add(y, list(x[:, 0].numpy()), h, self.batch_size)
+
 
 class Unary():
     def __init__(self, n_ops, num_units, batch_size):
@@ -80,6 +92,7 @@ class Unary():
 
         h = []
         W = tf.gather(self.W4, ops)  # shape [n_bundle x num_units x num_units]
+        b = tf.gather(self.b4, ops)
 
         # TODO. think about this more. seems expensie?
         # can decompose matmul as a sum of products
@@ -88,11 +101,11 @@ class Unary():
             h.append(x*W[:, :, i])  # products
         h = tf.reduce_sum(tf.stack(h, axis=-1), axis=1)  # sum
 
-        h = tf.nn.l2_normalize(h, axis=1)
+        h = tf.nn.l2_normalize(h+b, axis=1)
 
         y = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
 
-        return scatter_add(y, locs, h)
+        return scatter_add(y, locs, h, self.batch_size)
 
 class Binary():
     def __init__(self, n_ops, num_units, batch_size):
@@ -143,6 +156,7 @@ class Binary():
 
         h = [] # tf.zeros(shape=[n_bundle, self.num_units], dtype=tf.float32)
         W = tf.gather(self.W4, ops)  # shape [n_bundle x 2.num_units x num_units]
+        b = tf.gather(self.b4, ops)
 
         # can decompose matmul as a sum of products
         for i in range(self.num_units):
@@ -150,8 +164,8 @@ class Binary():
             h.append(x*W[:, :, i])  # products
         h = tf.reduce_sum(tf.stack(h, axis=-1), axis=1)  # sum
 
-        h = tf.nn.l2_normalize(h, axis=1)
+        h = tf.nn.l2_normalize(h+b, axis=1)
 
         y = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
 
-        return scatter_add(y, locs, h)
+        return scatter_add(y, locs, h, self.batch_size)

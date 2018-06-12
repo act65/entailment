@@ -1,6 +1,6 @@
 My attempt at implementing [Can Neural Networks Understand Logical Entailment?](https://arxiv.org/abs/1802.08535)
 
-## Details of my implementation
+## Details of my implementation (so far)
 
 > This architecture is slow... maybe bc of the lack of parallelism.
 
@@ -10,7 +10,7 @@ It would be possible to do more bundling (over levels of a tree rather than dept
 > tf.Eager doesnt give gradients for most of my variables...
 
 Not sure what this is about. Currently I am not recieving gradients for any variable used within the encoder (ie worlds, treenn and sat3), only for the dense layer in PWN.
-Current hypothesis, the `scatter_add` doesnt work as intended. You cant instantiate new variables like that...
+Current hypothesis: `scatter_add` doesnt work as intended. You cant instantiate new variables like that...
 
 ## Baseline
 
