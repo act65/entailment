@@ -13,7 +13,7 @@ but I didnt come up with nice to do it without refactoring most of my code...
 ## Baseline
 
 In [notes](/notes) I included a baseline that the paper didnt. Possible worlds (not learned...).
-Randomly pick a set of worlds (assignments of `True`, `False` to the variables) and evaluate entailment. This approach achieves similar to the best baselines provided.
+Randomly pick a set of worlds (assignments of `True`, `False` to the variables) and evaluate entailment.
 
 ## Lessons learned
 
@@ -25,8 +25,8 @@ Randomly pick a set of worlds (assignments of `True`, `False` to the variables) 
 ## Wait, but why?
 
 Why do we care about entailment?
-
+Still not sure... TODO
 
 ## Tests
 
-`python -m unittest test_cts_satisfiability`
+TODO... `python -m unittest`

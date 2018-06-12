@@ -38,7 +38,7 @@ class Parser():
     return ops, parse_result.inputs
 
 def fetch_data(batch_size):
-    # fetch a single batch
+    # fetch a generator
     fname = '../logical_entailment_dataset/data/train.txt'
     return batch_data(read_data(fname), batch_size)
 
