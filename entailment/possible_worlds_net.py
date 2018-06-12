@@ -52,7 +52,8 @@ class PossibleWorlds():
         x = tf.concat([self.encoder(w, copy.deepcopy(a)),
                      self.encoder(w, copy.deepcopy(b))], axis=1)
         # NOTE in the paper this isnt actually a dense layer...
-        return tf.nn.sigmoid(tf.matmul(x, self.W) + self.b)
+        y = tf.layers.flatten(tf.tensordot(x, self.W, axes=[[1], [0]])) + self.b
+        return tf.nn.sigmoid(y)
 
     def __call__(self, A, B):
         """
@@ -64,8 +65,5 @@ class PossibleWorlds():
         a_trees = [self.encoder.parser(a) for a in A]
         b_trees = [self.encoder.parser(b) for b in B]
 
-        p = tf.constant(1.0, dtype=tf.float32)
-        # TODO if we could make this parallel it would be much faster!?!
-        for i in range(self.n_worlds):
-            p *= self.eval_world(a_trees, b_trees, self.worlds[i:i+1])
-        return p
+        p = self.eval_world(a_trees, b_trees, self.worlds)
+        return tf.foldl(tf.multiply, tf.unstack(p, axis=1))

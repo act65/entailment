@@ -52,7 +52,7 @@ def main(args):
 
     # TODO explore how the speed scales with hparams
 
-    sat3 = csat.Sat3Cell(n_ops, args.d_world, args.batch_size)
+    sat3 = csat.Sat3Cell(n_ops, args.d_world, args.batch_size, args.n_worlds)
     nn = treenn.TreeNN(sat3, parser, args.batch_size)
     possibleworldsnet = pwn.PossibleWorlds(nn, args.n_worlds, args.d_world)
 
