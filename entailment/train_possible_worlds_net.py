@@ -39,6 +39,10 @@ def compute_step(model, A, B, t):
         loss = cross_entropy(y, t)
     grads = tape.gradient(loss, model.variables)
 
+    for g, v in zip(grads, model.variables):
+        if g is None:
+            raise ValueError('No gradient for {}'.format(v.name))
+
     return loss, grads, y
 
 def main(args):

@@ -25,3 +25,8 @@ Randomly pick a set of worlds (assignments of `True`, `False` to the variables) 
 ## Wait, but why?
 
 Why do we care about entailment?
+
+
+## Tests
+
+`python -m unittest test_cts_satisfiability`
