@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 import copy
 
@@ -31,8 +32,8 @@ class PossibleWorlds():
                 shape=[1, 1],
                 dtype=tf.float32,
                 name='b',
-                # NOTE set init to 3 bc we want to help p be equal to 1
-                initializer=tf.constant_initializer(3))
+                # NOTE set init to log(worlds) bc we want to help p be equal to 1
+                initializer=tf.constant_initializer(np.log(self.n_worlds)))
 
         self.variables = [self.W, self.b, self.worlds] +  self.encoder.variables
 

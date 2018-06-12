@@ -20,7 +20,7 @@ def argumentparser():
                         help='Dimension of embedding for symbols')
     parser.add_argument('--batch_size', type=int, default=50,
                         help='Batch size...')
-    parser.add_argument('--epochs', type=int, default=1,
+    parser.add_argument('--epochs', type=int, default=20,
                         help='number of epochs')
     return parser.parse_args()
 
@@ -80,7 +80,7 @@ def main(args):
                 plt.plot(losses, label='train loss')
                 plt.plot(accuracys, label='train accuracy')
                 # plt.plot(grad_norms, label='train grad norms')
-                plt.title('PWN at step {}'.format(str(step.numpy())))
+                plt.title('PWN: {} worlds'.format(args.n_worlds))
                 plt.legend()
                 plt.savefig('/tmp/train_pwn.png')
                 plt.close()
