@@ -2,12 +2,12 @@ My attempt at implementing [Can Neural Networks Understand Logical Entailment?](
 
 ## Details of my implementation (so far)
 
-> This architecture is slow... prob bc of the lack of parallelism.
+This implemetation parallelises computation over each batch. It bundles together;
+- the n-ary operations over each depth first traversal in a batch.
+- the different worlds.
 
-This implemetation parallelises computation over each batch. It bundles together the n-ary operations over each depth first traversal in a batch.
 It would be possible to do more bundling;
-- over levels of a tree rather than depth first traversal,
-- and over worlds
+- over levels of a tree rather than depth first traversal.
 but I didnt come up with nice to do it without refactoring most of my code...
 
 ## Baseline

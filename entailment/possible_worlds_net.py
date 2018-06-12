@@ -50,8 +50,9 @@ class PossibleWorlds():
         # NOTE this was a hard bug to catch. for some reason the trees are being
         # mutated. not sure what is doing this.
         x = tf.concat([self.encoder(w, copy.deepcopy(a)),
-                     self.encoder(w, copy.deepcopy(b))], axis=1)
+                       self.encoder(w, copy.deepcopy(b))], axis=1)
         # NOTE in the paper this isnt actually a dense layer...
+        # [batch_size x num_units*2 x n_worlds] x [num_units*2 x 1]
         y = tf.layers.flatten(tf.tensordot(x, self.W, axes=[[1], [0]])) + self.b
         return tf.nn.sigmoid(y)
 
