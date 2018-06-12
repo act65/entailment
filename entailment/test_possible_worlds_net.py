@@ -33,14 +33,13 @@ class TestIntegration(unittest.TestCase):
         tf.enable_eager_execution()
 
         parser = data.Parser(led_parser.propositional_language())
-        sat3 = csat.Sat3Cell(n_ops, d_world, batch_size)
+        sat3 = csat.Sat3Cell(n_ops, d_world, batch_size, n_worlds)
         nn = treenn.TreeNN(sat3, parser, batch_size)
         possibleworldsnet = pwn.PossibleWorlds(nn, n_worlds, d_world)
 
         A, B, E = next(data.fetch_data(batch_size))
         y = possibleworldsnet(A, B)
-        self.assertEqual(y.shape, [batch_size, 1])
-
+        self.assertEqual(y.get_shape().as_list(), [batch_size])
 
 if __name__ == '__main__':
     unittest.main()

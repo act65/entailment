@@ -22,18 +22,21 @@ class PossibleWorlds():
         with tf.variable_scope('pwn', reuse=tf.AUTO_REUSE):
             self.worlds = tf.get_variable(shape=(n_worlds, d_world),
                                           dtype=tf.float32,
-                                          name='worlds')
+                                          name='worlds',
+                                          initializer=tf.orthogonal_initializer())
+
+            # NOTE set init to log(worlds) bc we want to help p be equal to 1
+            k = np.log(self.n_worlds)/np.log(2)
             self.W = tf.get_variable(
                 shape=[encoder.cell.num_units*2, 1],
                 dtype=tf.float32,
                 name='W',
-                initializer=tf.random_normal_initializer(mean=0.0, stddev=0.1))
+                initializer=tf.orthogonal_initializer())
             self.b = tf.get_variable(
                 shape=[1, 1],
                 dtype=tf.float32,
                 name='b',
-                # NOTE set init to log(worlds) bc we want to help p be equal to 1
-                initializer=tf.constant_initializer(np.log(self.n_worlds)))
+                initializer=tf.constant_initializer(k))
 
         self.variables = [self.W, self.b, self.worlds] +  self.encoder.variables
 

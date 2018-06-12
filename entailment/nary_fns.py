@@ -27,6 +27,7 @@ class Nullary():
         with tf.variable_scope('nullary', reuse=tf.AUTO_REUSE):
             self.embeddings = tf.get_variable(shape=[n_ops, num_units, num_units],
                                               dtype=tf.float32,
+                                              initializer=tf.orthogonal_initializer(),
                                               name='embeddings')
 
         self.variables = [self.embeddings]
@@ -58,8 +59,14 @@ class Unary():
         self.num_units = num_units
         self.batch_size = batch_size
         with tf.variable_scope('unary', reuse=tf.AUTO_REUSE):
-            self.W4 = tf.get_variable(shape=(n_ops, num_units, num_units), dtype=tf.float32, name='W4')
-            self.b4 = tf.get_variable(shape=(n_ops, num_units), dtype=tf.float32, name='b4')
+            self.W4 = tf.get_variable(shape=(n_ops, num_units, num_units),
+                                      dtype=tf.float32,
+                                      initializer=tf.orthogonal_initializer(),
+                                      name='W4')
+            self.b4 = tf.get_variable(shape=(n_ops, num_units),
+                                      dtype=tf.float32,
+                                      initializer=tf.orthogonal_initializer(),
+                                      name='b4')
 
         self.variables = [self.W4, self.b4]
 
@@ -107,8 +114,14 @@ class Binary():
         self.batch_size = batch_size
 
         with tf.variable_scope('binary', reuse=tf.AUTO_REUSE):
-            self.W4 = tf.get_variable(shape=(n_ops, 2*num_units, num_units), dtype=tf.float32, name='W4')
-            self.b4 = tf.get_variable(shape=(n_ops, num_units), dtype=tf.float32, name='b4')
+            self.W4 = tf.get_variable(shape=(n_ops, 2*num_units, num_units),
+                                      dtype=tf.float32,
+                                      initializer=tf.orthogonal_initializer(),
+                                      name='W4')
+            self.b4 = tf.get_variable(shape=(n_ops, num_units),
+                                      dtype=tf.float32,
+                                      initializer=tf.orthogonal_initializer(),
+                                      name='b4')
 
         self.variables = [self.W4, self.b4]
 

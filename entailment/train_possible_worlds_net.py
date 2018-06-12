@@ -22,6 +22,8 @@ def argumentparser():
                         help='Batch size...')
     parser.add_argument('--epochs', type=int, default=20,
                         help='number of epochs')
+    parser.add_argument('--logdir', type=str, default='/tmp/pwn/',
+                        help='location to save logs')
     return parser.parse_args()
 
 def cross_entropy(p, t):
@@ -52,15 +54,15 @@ def main(args):
 
     # TODO explore how the speed scales with hparams
 
+    # construct a pwn using a tree/sat3 encoder
     sat3 = csat.Sat3Cell(n_ops, args.d_world, args.batch_size, args.n_worlds)
     nn = treenn.TreeNN(sat3, parser, args.batch_size)
     possibleworldsnet = pwn.PossibleWorlds(nn, args.n_worlds, args.d_world)
 
     opt = tf.train.AdamOptimizer()
+    writer = tf.contrib.summary.create_file_writer(args.logdir)
+    writer.set_as_default()
 
-    losses = []
-    accuracys = []
-    grad_norms = []
     for e in range(args.epochs):
         for A, B, E in data.fetch_data(args.batch_size):
             loss, grads, p = compute_step(possibleworldsnet, A, B, E)
@@ -71,20 +73,10 @@ def main(args):
             acc =  np.mean(np.equal(np.round(p), np.array(E)))
             print('\rstep: {} loss {:.4f} acc {:.4f}'.format(step.numpy(),
                                 tf.reduce_mean(loss), acc), end='', flush=True)
-            losses.append(loss)
-            accuracys.append(acc)
-            # grad_norms.append(np.sum([np.linalg.norm(g) for g in grads]))
 
-            if step.numpy() % 10 == 0:
-                fig = plt.figure()
-                plt.plot(losses, label='train loss')
-                plt.plot(accuracys, label='train accuracy')
-                # plt.plot(grad_norms, label='train grad norms')
-                plt.title('PWN: {} worlds'.format(args.n_worlds))
-                plt.legend()
-                plt.savefig('/tmp/train_pwn.png')
-                plt.close()
-
+            with tf.contrib.summary.record_summaries_every_n_global_steps(10):
+                tf.contrib.summary.scalar('loss', loss)
+                tf.contrib.summary.scalar('acc', acc)
 
 if __name__ == "__main__":
     tf.enable_eager_execution()
