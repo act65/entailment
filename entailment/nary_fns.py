@@ -15,13 +15,13 @@ class Nullary():
         self.batch_size = batch_size
         # self.embed = tf.keras.layers.Embedding(n_ops, num_units)
         with tf.variable_scope('nullary', reuse=tf.AUTO_REUSE):
-            self.embeddings = tf.get_variable(shape=[n_ops, num_units],
+            self.embeddings = tf.get_variable(shape=[n_ops, num_units, num_units],
                                               dtype=tf.float32,
                                               name='embeddings')
 
         self.variables = [self.embeddings]
 
-    def __call__(self, x):
+    def __call__(self, x, w):
         """
         Args:
             x (tf.tensor): shape [bundle_size, 2].
@@ -32,10 +32,12 @@ class Nullary():
         """
         y = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
         x = tf.constant(x, dtype=tf.int32)
-        # e = self.embed(x[:, 1])  # fetch embeddings
-        e = tf.gather(self.embeddings, x[:, 1])
 
-        return scatter_add(y, x[:,0], e)
+        # fetch op embeddings [num_units x num_units]
+        e = tf.gather(self.embeddings, x[:, 1])
+        h = tf.matmul(tf.reshape(e, [-1, self.num_units]), w, transpose_b=True)
+        h = tf.reshape(h, [-1, self.num_units])
+        return scatter_add(y, x[:,0], h)
 
 class Unary():
     def __init__(self, n_ops, num_units, batch_size):

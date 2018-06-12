@@ -27,15 +27,15 @@ class TreeNN():
 
     # depth first traversal across all the trees in the batch
     lens = [len(ops) for ops, _ in trees]
-    for i in range(max(lens)):
+    for i in range(max(lens)):  # traverse the trees
         locs_n_ops_n_args = []
-        for j, opsnargs in enumerate(trees):  # each element of our batch
+        for loc, opsnargs in enumerate(trees):  # for each element of our batch
             ops, args = opsnargs
             if i<len(ops):  # make sure we dont try to index out of range
-                args[i] = [i+a for a in args[i]]  # relative to abs
-                locs_n_ops_n_args.append((j, ops[i], args[i]))
+                arg = [i+a for a in args[i]]  # relative indexing to absolute
+                locs_n_ops_n_args.append((loc, ops[i], arg))
 
-        state = self.cell(states, locs_n_ops_n_args)
+        state = self.cell(states, locs_n_ops_n_args, w)
         states.append(state)
 
     return states[-1]

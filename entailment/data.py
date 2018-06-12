@@ -1,4 +1,5 @@
 import led_parser
+import numpy as np
 
 def read_data(fname):
   """
@@ -13,16 +14,17 @@ def read_data(fname):
   for d in data[:-1]:
     a, b, e, _, _, _ = tuple(d.split(','))
     new_data.append([a, b, int(e)])
-  return new_data
+  return np.array(new_data)
 
 def batch_data(data, batch_size):
   n = len(data)
-  data = list(zip(*data[0:-1]))  # transpose the data
+  np.random.shuffle(data)
+  data = data.T # transpose the data
   for i in range(n//batch_size-1):
     A = data[0][i*batch_size:(i+1)*batch_size]
     B = data[1][i*batch_size:(i+1)*batch_size]
     E = data[2][i*batch_size:(i+1)*batch_size]
-    yield A, B, E
+    yield list(A), list(B), list(E.astype(np.float32))
 
 class Parser():
   def __init__(self, language):
@@ -39,3 +41,7 @@ def fetch_data(batch_size):
     # fetch a single batch
     fname = '../logical_entailment_dataset/data/train.txt'
     return batch_data(read_data(fname), batch_size)
+
+if __name__ == '__main__':
+    gen = fetch_data(50)
+    print(next(gen))

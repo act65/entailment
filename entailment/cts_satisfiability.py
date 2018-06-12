@@ -14,7 +14,7 @@ class Sat3Cell():
                           self.unary.variables +
                           self.binary.variables)
 
-    def __call__(self, states, locs_n_ops_n_args):
+    def __call__(self, states, locs_n_ops_n_args, w):
         """
         Args:
             states (list): a list of tf.tensors of shape [?, ?]
@@ -44,7 +44,7 @@ class Sat3Cell():
         state = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
         # apply nullary ops as a batch
         if len(nullary_ops) > 0:
-            state += self.nullary(nullary_ops)
+            state += self.nullary(nullary_ops, w)
         # apply unary ops as a batch
         if len(unary_ops) > 0:
             state += self.unary(states, unary_ops)
