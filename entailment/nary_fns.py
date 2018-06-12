@@ -2,6 +2,11 @@ import tensorflow as tf
 import numpy as np
 
 def scatter_add(ref, idx, x, batch_size):
+    # TODO. still think this could be done in a nicer way!?
+    # must be a more parallel way to do this?
+    # was using tf.scatter_add but that required new variables to be
+    # instantiated which didnt allow grads to flow
+
     indexes = [True if i in idx else False
                for i in range(batch_size)]
     vals = []
@@ -90,18 +95,11 @@ class Unary():
 
         x = tf.gather(stack, idx)
 
-        h = []
         W = tf.gather(self.W4, ops)  # shape [n_bundle x num_units x num_units]
         b = tf.gather(self.b4, ops)
 
-        # TODO. think about this more. seems expensie?
-        # can decompose matmul as a sum of products
-        for i in range(self.num_units):
-            # (batch_size x num_units) . (num_units x num_units)
-            h.append(x*W[:, :, i])  # products
-        h = tf.reduce_sum(tf.stack(h, axis=-1), axis=1)  # sum
-
-        h = tf.nn.l2_normalize(h+b, axis=1)
+        h = tf.reduce_mean(tf.tensordot(x, W, axes=[[1], [1]]), axis=1) + b
+        h = tf.nn.l2_normalize(h, axis=1)
 
         y = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
 
@@ -154,17 +152,11 @@ class Binary():
         # the actual cell ...
         x = tf.concat([l, r], axis=1)  # shape [n_bundle x 2.num_units]
 
-        h = [] # tf.zeros(shape=[n_bundle, self.num_units], dtype=tf.float32)
         W = tf.gather(self.W4, ops)  # shape [n_bundle x 2.num_units x num_units]
         b = tf.gather(self.b4, ops)
 
-        # can decompose matmul as a sum of products
-        for i in range(self.num_units):
-            # (batch_size x 2.num_units) . (2.num_units x num_units)
-            h.append(x*W[:, :, i])  # products
-        h = tf.reduce_sum(tf.stack(h, axis=-1), axis=1)  # sum
-
-        h = tf.nn.l2_normalize(h+b, axis=1)
+        h = tf.reduce_mean(tf.tensordot(x, W, axes=[[1], [1]]), axis=1) + b
+        h = tf.nn.l2_normalize(h, axis=1)
 
         y = tf.zeros([self.batch_size, self.num_units], dtype=tf.float32)
 
