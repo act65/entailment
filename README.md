@@ -27,6 +27,17 @@ Randomly pick a set of worlds (assignments of `True`, `False` to the variables) 
 Why do we care about entailment?
 Still not sure... TODO
 
-## Tests
+> Which architectures are best at inferring, encoding, and relating features in a purely structural sequence-based problem?”. In answering these questions, we aim to better understand the inductive biases of popular architectures with regard to structure and abstraction in sequence data. Such understanding would help pave the road to agents and classifiers that reason structurally, in addition to reasoning on the basis of essentially semantic representations.
 
-TODO... `python -m unittest`
+## Train your own
+```
+python train_possible_worlds_net.py
+tensorboard --logdir=/tmp/pwn
+```
+
+## TODOs
+
+* TODO explore how the speed scales with hparams
+* TODO... `python -m unittest`
+* Wait but why.
+* ?

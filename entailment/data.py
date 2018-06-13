@@ -1,4 +1,5 @@
 import led_parser
+import os
 import numpy as np
 
 def read_data(fname):
@@ -26,6 +27,17 @@ def batch_data(data, batch_size):
     E = data[2][i*batch_size:(i+1)*batch_size]
     yield list(A), list(B), list(E.astype(np.float32))
 
+def fetch_data(batch_size):
+    # fetch a generator
+    fname = '../logical_entailment_dataset/data/train.txt'
+    return batch_data(read_data(fname), batch_size)
+
+def fetch_test_sets(path, batch_size):
+    fnames = [f for f in os.listdir(path)
+              if f.startswith('test')]
+    for fname in fnames:
+        yield fname, batch_data(read_data(os.path.join(path, fname)), batch_size)
+
 class Parser():
   def __init__(self, language):
     self.language = language
@@ -37,10 +49,7 @@ class Parser():
     ops = [self.vocabulary[op.decode("utf-8")] for op in parse_result.ops]
     return ops, parse_result.inputs
 
-def fetch_data(batch_size):
-    # fetch a generator
-    fname = '../logical_entailment_dataset/data/train.txt'
-    return batch_data(read_data(fname), batch_size)
+
 
 if __name__ == '__main__':
     gen = fetch_data(50)

@@ -21,12 +21,14 @@ class Sat3Cell():
         Args:
             states (list): a list of tf.tensors of shape [?, ?]
             opsnargs (list):
+
+        Returns:
+            (tf.tensor): shape [batch_size, num_units, n_worlds]
         """
         locs, ops, args = list(zip(*locs_n_ops_n_args))
         n = len(locs)
 
-        # bundle into nullary, unary and binary ops
-        # so we can batch them together
+        # bundle nullary, unary and binary ops
         nullary_ops = []
         unary_ops = []
         binary_ops = []
@@ -43,7 +45,8 @@ class Sat3Cell():
                 raise ValueError('Too many args. Got {}, but should '
                                  'be in [0,1,2]'.format(len(arg)) )
 
-        state = tf.zeros([self.batch_size, self.num_units, self.n_worlds], dtype=tf.float32)
+        state = tf.zeros([self.batch_size, self.num_units, self.n_worlds],
+                         dtype=tf.float32)
         # apply nullary ops as a batch
         if len(nullary_ops) > 0:
             state += self.nullary(nullary_ops, w)

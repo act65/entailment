@@ -12,13 +12,11 @@ import treenn
 
 def argumentparser():
     parser = argparse.ArgumentParser(description='Train a PWN')
-    parser.add_argument('--d_world', type=int, default=10,
+    parser.add_argument('--num_units', type=int, default=64,
                         help='Dimension of each world')
-    parser.add_argument('--n_worlds', type=int, default=16,
+    parser.add_argument('--n_worlds', type=int, default=64,
                         help='Number of worlds')
-    parser.add_argument('--d_embed', type=int, default=8,
-                        help='Dimension of embedding for symbols')
-    parser.add_argument('--batch_size', type=int, default=50,
+    parser.add_argument('--batch_size', type=int, default=64,
                         help='Batch size...')
     parser.add_argument('--epochs', type=int, default=20,
                         help='number of epochs')
@@ -30,6 +28,9 @@ def cross_entropy(p, t):
     t = tf.constant(t, dtype=tf.float32, shape=(p.shape[0], 1))
     with tf.name_scope('cross_entropy'):
         return tf.reduce_mean(-t*tf.log(p) - (1-t)*tf.log(1-p))
+
+def accuracy(y, t):
+    return np.mean(np.equal(np.round(y), np.array(t)))
 
 def compute_step(model, A, B, t):
     """
@@ -47,36 +48,53 @@ def compute_step(model, A, B, t):
 
     return loss, grads, y
 
+def evaluate(generator, model):
+    pass
+
 def main(args):
     language = led_parser.propositional_language()
     parser = data.Parser(language)
     n_ops = len(language.symbols)
 
-    # TODO explore how the speed scales with hparams
-
     # construct a pwn using a tree/sat3 encoder
-    sat3 = csat.Sat3Cell(n_ops, args.d_world, args.batch_size, args.n_worlds)
+    sat3 = csat.Sat3Cell(n_ops, args.num_units, args.batch_size, args.n_worlds)
     nn = treenn.TreeNN(sat3, parser, args.batch_size)
-    possibleworldsnet = pwn.PossibleWorlds(nn, args.n_worlds, args.d_world)
+    possibleworldsnet = pwn.PossibleWorlds(nn, args.n_worlds, args.num_units)
+
+    print('N variables = {}'.format(np.sum([np.prod(var.shape)
+                                    for var in possibleworldsnet.variables])))
 
     opt = tf.train.AdamOptimizer()
     writer = tf.contrib.summary.create_file_writer(args.logdir)
     writer.set_as_default()
 
     for e in range(args.epochs):
+        # Train
         for A, B, E in data.fetch_data(args.batch_size):
             loss, grads, p = compute_step(possibleworldsnet, A, B, E)
             gnvs = zip(grads, possibleworldsnet.variables)
             step = tf.train.get_or_create_global_step()
             opt.apply_gradients(gnvs, global_step=step)
 
-            acc =  np.mean(np.equal(np.round(p), np.array(E)))
-            print('\rstep: {} loss {:.4f} acc {:.4f}'.format(step.numpy(),
-                                tf.reduce_mean(loss), acc), end='', flush=True)
+            print('\rstep: {} loss {:.4f}'.format(step.numpy(),
+                                tf.reduce_mean(loss)), end='', flush=True)
 
             with tf.contrib.summary.record_summaries_every_n_global_steps(10):
                 tf.contrib.summary.scalar('loss', loss)
-                tf.contrib.summary.scalar('acc', acc)
+                tf.contrib.summary.scalar('acc', accuracy(p, E))
+
+            with tf.contrib.summary.record_summaries_every_n_global_steps(200):
+                for g, v in gnvs:
+                    tf.contrib.summary.histogram(v.name, v)
+                    tf.contrib.summary.histogram(g.name, g)
+
+        # Evaluate
+        for test_name, test_set in data.fetch_test_sets('../logical_entailment_dataset/data',
+                                        args.batch_size):
+            print('\rEvaluating: {}'.format(test_name), end='', flush=True)
+            acc = np.mean([accuracy(possibleworldsnet(A, B), E)
+                           for A, B, E in test_set])
+            tf.contrib.summary.scalar(test_name, acc)
 
 if __name__ == "__main__":
     tf.enable_eager_execution()
