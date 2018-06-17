@@ -48,15 +48,12 @@ def compute_step(model, A, B, t):
 
     return loss, grads, y
 
-def evaluate(generator, model):
-    pass
-
 def main(args):
     language = led_parser.propositional_language()
     parser = data.Parser(language)
     n_ops = len(language.symbols)
 
-    # construct a pwn using a tree/sat3 encoder
+    # construct a pwn using a treenn with a sat3 cell
     sat3 = csat.Sat3Cell(n_ops, args.num_units, args.batch_size, args.n_worlds)
     nn = treenn.TreeNN(sat3, parser, args.batch_size)
     possibleworldsnet = pwn.PossibleWorlds(nn, args.n_worlds, args.num_units)
@@ -82,11 +79,6 @@ def main(args):
             with tf.contrib.summary.record_summaries_every_n_global_steps(10):
                 tf.contrib.summary.scalar('loss', loss)
                 tf.contrib.summary.scalar('acc', accuracy(p, E))
-
-            with tf.contrib.summary.record_summaries_every_n_global_steps(200):
-                for g, v in gnvs:
-                    tf.contrib.summary.histogram(v.name, v)
-                    tf.contrib.summary.histogram(g.name, g)
 
         # Evaluate
         for test_name, test_set in data.fetch_test_sets('../logical_entailment_dataset/data',

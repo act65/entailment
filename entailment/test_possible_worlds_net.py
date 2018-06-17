@@ -2,6 +2,9 @@ import unittest
 
 import tensorflow as tf
 
+if not tf.executing_eagerly():
+    tf.enable_eager_execution()
+
 import led_parser
 
 import possible_worlds_net as pwn
@@ -29,8 +32,6 @@ class TestIntegration(unittest.TestCase):
         n_ops = 32
         d_embed = 8
         batch_size = 50
-
-        tf.enable_eager_execution()
 
         parser = data.Parser(led_parser.propositional_language())
         sat3 = csat.Sat3Cell(n_ops, d_world, batch_size, n_worlds)

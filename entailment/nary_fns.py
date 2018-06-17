@@ -102,9 +102,9 @@ class Unary():
         W = tf.gather(self.W4, ops)  # shape [n_bundle x 2.num_units x num_units]
         b = tf.gather(self.b4, ops)
 
-        h = tf.tensordot(W, x, axes=[[1], [1]])
-        h = tf.reduce_mean(h, axis=2) + tf.expand_dims(b, -1)
-        h = tf.nn.l2_normalize(h, axis=1)
+
+        h = tf.reduce_sum(tf.expand_dims(W, -1) * tf.expand_dims(x, -2), axis=1)
+        h = tf.nn.l2_normalize(h + tf.expand_dims(b, -1), axis=1)
 
         return scatter_add(locs, h, self.batch_size)
 
@@ -164,8 +164,7 @@ class Binary():
         W = tf.gather(self.W4, ops)  # shape [n_bundle x 2.num_units x num_units]
         b = tf.gather(self.b4, ops)
 
-        h = tf.tensordot(W, x, axes=[[1], [1]])
-        h = tf.reduce_mean(h, axis=2) + tf.expand_dims(b, -1)
-        h = tf.nn.l2_normalize(h, axis=1)
+        h = tf.reduce_sum(tf.expand_dims(W, -1) * tf.expand_dims(x, -2), axis=1)
+        h = tf.nn.l2_normalize(h + tf.expand_dims(b, -1), axis=1)
 
         return scatter_add(locs, h, self.batch_size)
