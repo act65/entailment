@@ -1,3 +1,6 @@
+from __future__ import print_function
+
+
 import argparse
 import numpy as np
 import tensorflow as tf
@@ -22,6 +25,8 @@ def argumentparser():
                         help='number of epochs')
     parser.add_argument('--logdir', type=str, default='/tmp/pwn/',
                         help='location to save logs')
+    parser.add_argument('--datadir', type=str, default'../logical_entailment_dataset/data',
+                        help='location of the data')
     return parser.parse_args()
 
 def cross_entropy(p, t):
