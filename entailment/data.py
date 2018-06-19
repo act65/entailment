@@ -1,8 +1,19 @@
 import led_parser
 import os
 import numpy as np
+from tensorflow.python.lib.io import file_io
 
 def read_data(fname):
+  with file_io.FileIO(train_file, mode='r') as f:
+    data = f.read()
+  data = data.split('\n')
+  new_data = []
+  for d in data[:-1]:
+    a, b, e, _, _, _ = tuple(d.split(','))
+    new_data.append([a, b, int(e)])
+  return np.array(new_data)
+
+def read_data_old(fname):
   """
   Reads the data files.
   Args:
