@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import logging
+logger = logging.getLogger()
 
 import argparse
 import numpy as np
@@ -78,8 +80,9 @@ def main(args):
             step = tf.train.get_or_create_global_step()
             opt.apply_gradients(gnvs, global_step=step)
 
-            print('\rstep: {} loss {:.4f}'.format(step.numpy(),
-                                tf.reduce_mean(loss)), end='', flush=True)
+            # print('\rstep: {} loss {:.4f}'.format(step.numpy(),
+            #                     tf.reduce_mean(loss)), end='')
+            logging.info('step: {} loss: {}'.format(step.numpy(), tf.reduce_mean(loss)))
 
             with tf.contrib.summary.record_summaries_every_n_global_steps(10):
                 tf.contrib.summary.scalar('loss', loss)
@@ -88,7 +91,7 @@ def main(args):
         # Evaluate
         for test_name, test_set in data.fetch_test_sets(args.datadir,
                                         args.batch_size):
-            print('\rEvaluating: {}'.format(test_name), end='', flush=True)
+            print('\rEvaluating: {}'.format(test_name), end='')
             acc = np.mean([accuracy(possibleworldsnet(A, B), E)
                            for A, B, E in test_set])
             tf.contrib.summary.scalar(test_name, acc)

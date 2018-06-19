@@ -1,10 +1,11 @@
 import led_parser
 import os
+import tensorflow as tf
 import numpy as np
 from tensorflow.python.lib.io import file_io
 
 def read_data(fname):
-  with file_io.FileIO(train_file, mode='r') as f:
+  with file_io.FileIO(fname, mode='r') as f:
     data = f.read()
   data = data.split('\n')
   new_data = []
@@ -44,7 +45,7 @@ def fetch_data(batch_size):
     return batch_data(read_data(fname), batch_size)
 
 def fetch_test_sets(path, batch_size):
-    fnames = [f for f in os.listdir(path)
+    fnames = [f for f in tf.gfile.ListDirectory(path)
               if f.startswith('test')]
     for fname in fnames:
         yield fname, batch_data(read_data(os.path.join(path, fname)), batch_size)
