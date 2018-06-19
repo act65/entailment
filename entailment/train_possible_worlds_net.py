@@ -2,7 +2,9 @@ from __future__ import print_function
 
 import logging
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
+import os
 import argparse
 import numpy as np
 import tensorflow as tf
@@ -75,7 +77,7 @@ def main(args):
 
     for e in range(args.epochs):
         # Train
-        for A, B, E in data.batch_data(data.read_data(args.datadir), args.batch_size):
+        for A, B, E in data.batch_data(data.read_data(os.path.join(args.datadir, 'train.txt')), args.batch_size):
             loss, grads, p = compute_step(possibleworldsnet, A, B, E)
             gnvs = zip(grads, possibleworldsnet.variables)
             step = tf.train.get_or_create_global_step()
