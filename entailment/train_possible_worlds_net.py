@@ -4,7 +4,7 @@ from __future__ import print_function
 import argparse
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import led_parser
 
@@ -25,7 +25,7 @@ def argumentparser():
                         help='number of epochs')
     parser.add_argument('--logdir', type=str, default='/tmp/pwn/',
                         help='location to save logs')
-    parser.add_argument('--datadir', type=str, default'../logical_entailment_dataset/data',
+    parser.add_argument('--datadir', type=str, default='../logical_entailment_dataset/data',
                         help='location of the data')
     return parser.parse_args()
 
@@ -72,7 +72,7 @@ def main(args):
 
     for e in range(args.epochs):
         # Train
-        for A, B, E in data.fetch_data(args.batch_size):
+        for A, B, E in data.batch_data(data.read_data(args.datadir), args.batch_size):
             loss, grads, p = compute_step(possibleworldsnet, A, B, E)
             gnvs = zip(grads, possibleworldsnet.variables)
             step = tf.train.get_or_create_global_step()
@@ -86,7 +86,7 @@ def main(args):
                 tf.contrib.summary.scalar('acc', accuracy(p, E))
 
         # Evaluate
-        for test_name, test_set in data.fetch_test_sets('../logical_entailment_dataset/data',
+        for test_name, test_set in data.fetch_test_sets(args.datadir,
                                         args.batch_size):
             print('\rEvaluating: {}'.format(test_name), end='', flush=True)
             acc = np.mean([accuracy(possibleworldsnet(A, B), E)
