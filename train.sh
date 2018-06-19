@@ -1,5 +1,5 @@
 BUCKET_NAME="gs://entails"
-JOB_NAME="entail_7"
+JOB_NAME="entail_8"
 gcloud ml-engine jobs submit training "${JOB_NAME}" \
 --stream-logs \
 --module-name entailment.train_possible_worlds_net \
@@ -7,6 +7,7 @@ gcloud ml-engine jobs submit training "${JOB_NAME}" \
 --staging-bucket "${BUCKET_NAME}" \
 --region "us-central1" \
 --runtime-version=1.8 \
+--scale-tier="basic-tpu" \
 -- \
 --batch_size=10 \
 --logdir=$BUCKET_NAME/$JOB_NAME/logs/0 \

@@ -56,6 +56,7 @@ def compute_step(model, A, B, t):
     return loss, grads, y
 
 def main(args):
+    print('Running trainer with {}'.format(args))
     language = led_parser.propositional_language()
     parser = data.Parser(language)
     n_ops = len(language.symbols)
