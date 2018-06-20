@@ -8,7 +8,6 @@ import os
 import argparse
 import numpy as np
 import tensorflow as tf
-# import matplotlib.pyplot as plt
 
 import led_parser
 
@@ -58,7 +57,7 @@ def compute_step(model, A, B, t):
     return loss, grads, y
 
 def main(args):
-    print('Running trainer with {}'.format(args))
+    logging.info('Running trainer with {}'.format(args))
     language = led_parser.propositional_language()
     parser = data.Parser(language)
     n_ops = len(language.symbols)
@@ -68,10 +67,11 @@ def main(args):
     nn = treenn.TreeNN(sat3, parser, args.batch_size)
     possibleworldsnet = pwn.PossibleWorlds(nn, args.n_worlds, args.num_units)
 
-    print('N variables = {}'.format(np.sum([np.prod(var.shape)
+    logging.info('N variables = {}'.format(np.sum([np.prod(var.shape)
                                     for var in possibleworldsnet.variables])))
-
     opt = tf.train.AdamOptimizer()
+
+    checkpoint = tf.contrib.eager.Checkpoint(**{var.name: var for var in possibleworldsnet.variables})
     writer = tf.contrib.summary.create_file_writer(args.logdir)
     writer.set_as_default()
 
@@ -83,8 +83,6 @@ def main(args):
             step = tf.train.get_or_create_global_step()
             opt.apply_gradients(gnvs, global_step=step)
 
-            # print('\rstep: {} loss {:.4f}'.format(step.numpy(),
-            #                     tf.reduce_mean(loss)), end='')
             logging.info('step: {} loss: {}'.format(step.numpy(), tf.reduce_mean(loss)))
 
             with tf.contrib.summary.record_summaries_every_n_global_steps(10):
@@ -94,10 +92,12 @@ def main(args):
         # Evaluate
         for test_name, test_set in data.fetch_test_sets(args.datadir,
                                         args.batch_size):
-            print('\rEvaluating: {}'.format(test_name), end='')
+            logging.info('Eval: {}'.format(test_name))
             acc = np.mean([accuracy(possibleworldsnet(A, B), E)
                            for A, B, E in test_set])
             tf.contrib.summary.scalar(test_name, acc)
+
+        checkpoint.save(os.path.join(args.logdir, 'ckpt{}'.format(e)))
 
 if __name__ == "__main__":
     tf.enable_eager_execution()
