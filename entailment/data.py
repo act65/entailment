@@ -1,8 +1,10 @@
-import led_parser
 import os
+
 import tensorflow as tf
-import numpy as np
 from tensorflow.python.lib.io import file_io
+import numpy as np
+
+import entailment.led_parser as led_parser
 
 def read_data(fname):
   with file_io.FileIO(fname, mode='r') as f:
@@ -41,7 +43,7 @@ def batch_data(data, batch_size):
 
 def fetch_data(batch_size):
     # fetch a generator
-    fname = '../logical_entailment_dataset/data/train.txt'
+    fname = '../../logical-entailment-dataset/data/train.txt'
     return batch_data(read_data(fname), batch_size)
 
 def fetch_test_sets(path, batch_size):

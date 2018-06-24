@@ -1,9 +1,7 @@
 import unittest
 
 import tensorflow as tf
-
-if not tf.executing_eagerly():
-    tf.enable_eager_execution()
+tf.enable_eager_execution()
 
 import led_parser
 

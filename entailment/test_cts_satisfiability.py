@@ -2,7 +2,6 @@ import unittest
 
 import numpy as np
 import tensorflow as tf
-tf.enable_eager_execution()
 
 import cts_satisfiability as csat
 import data
@@ -48,4 +47,7 @@ class TestCtsSat(unittest.TestCase):
         self.assertTrue('binary/W4:0' in names)
 
 if __name__ == '__main__':
+    if not tf.executing_eagerly():
+        tf.enable_eager_execution()
+
     unittest.main()
